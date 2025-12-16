@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domain Enrichment - Enrichissez vos données entreprises</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="8" fill="#4F46E5"/>
+                    <path d="M16 8L24 14V22C24 23.1 23.1 24 22 24H10C8.9 24 8 23.1 8 22V14L16 8Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 24V16H20V24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Domain Enrichment</span>
+            </div>
+            <div class="subtitle">Transformez vos noms d'entreprises en domaines vérifiés</div>
+        </header>
+
+        <!-- Main Content -->
+        <main id="app">
+            <!-- Step 1: Upload -->
+            <div id="upload-section" class="section active">
+                <div class="card">
+                    <h2>Étape 1 : Importez votre fichier</h2>
+                    <p class="description">
+                        Uploadez un fichier CSV ou Excel contenant une colonne "company name" et optionnellement
+                        des colonnes de contexte (pays, secteur, etc.) pour améliorer la précision.
+                    </p>
+
+                    <div id="drop-zone" class="drop-zone">
+                        <svg class="upload-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <div class="drop-zone-text">
+                            <strong>Glissez-déposez votre fichier ici</strong>
+                            <span>ou cliquez pour parcourir</span>
+                        </div>
+                        <input type="file" id="file-input" accept=".csv,.xlsx,.xls" hidden>
+                        <div class="file-types">CSV, XLSX, XLS (max 50MB)</div>
+                    </div>
+
+                    <div id="upload-progress" class="upload-progress hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <p class="progress-text">Upload en cours...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Column Mapping -->
+            <div id="mapping-section" class="section">
+                <div class="card">
+                    <h2>Étape 2 : Mappez vos colonnes</h2>
+                    <p class="description">
+                        Vérifiez et ajustez la correspondance entre vos colonnes et les champs attendus par le système.
+                    </p>
+
+                    <div id="file-info" class="file-info">
+                        <div class="info-item">
+                            <span class="label">Fichier :</span>
+                            <span id="filename" class="value"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Lignes détectées :</span>
+                            <span id="row-count" class="value"></span>
+                        </div>
+                    </div>
+
+                    <div class="mapping-container">
+                        <div class="mapping-header">
+                            <div class="mapping-col">Votre colonne</div>
+                            <div class="mapping-arrow"></div>
+                            <div class="mapping-col">Champ système</div>
+                        </div>
+                        <div id="column-mappings"></div>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="back-btn" class="btn btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            </svg>
+                            Retour
+                        </button>
+                        <button id="start-enrichment-btn" class="btn btn-primary">
+                            Lancer l'enrichissement
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Processing -->
+            <div id="processing-section" class="section">
+                <div class="card">
+                    <h2>Étape 3 : Enrichissement en cours</h2>
+                    <p class="description">
+                        Nous recherchons et vérifions les domaines officiels pour chaque entreprise.
+                        Cela peut prendre quelques minutes selon le volume de données.
+                    </p>
+
+                    <div class="processing-visual">
+                        <div class="spinner"></div>
+                        <div id="processing-message" class="processing-message">
+                            Initialisation...
+                        </div>
+                    </div>
+
+                    <div class="progress-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="progress-count">0</div>
+                            <div class="stat-label">Entreprises traitées</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="total-count">0</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="progress-percentage">0%</div>
+                            <div class="stat-label">Progression</div>
+                        </div>
+                    </div>
+
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div id="enrichment-progress-fill" class="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <div id="processing-detail" class="processing-detail"></div>
+                </div>
+            </div>
+
+            <!-- Step 4: Complete -->
+            <div id="complete-section" class="section">
+                <div class="card">
+                    <div class="success-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <h2>Enrichissement terminé !</h2>
+                    <p class="description">
+                        Vos données ont été enrichies avec succès. Téléchargez le fichier résultat ci-dessous.
+                    </p>
+
+                    <div class="result-info">
+                        <div class="info-item">
+                            <span class="label">Entreprises traitées :</span>
+                            <span id="final-count" class="value"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Domaines trouvés :</span>
+                            <span id="domains-found" class="value"></span>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="download-btn" class="btn btn-primary btn-large">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Télécharger le fichier enrichi
+                        </button>
+                        <button id="new-enrichment-btn" class="btn btn-secondary">
+                            Nouvel enrichissement
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Section -->
+            <div id="error-section" class="section">
+                <div class="card">
+                    <div class="error-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                    </div>
+                    <h2>Une erreur est survenue</h2>
+                    <p id="error-message" class="error-message"></p>
+                    <button id="retry-btn" class="btn btn-primary">
+                        Réessayer
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Propulsé par OpenAI GPT-4 et Serper API</p>
+        </footer>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
