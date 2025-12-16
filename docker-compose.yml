@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: domain-enrichment-app
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SERPER_API_KEY=${SERPER_API_KEY}
+      - OPENAI_ORG_ID=${OPENAI_ORG_ID}
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8000
+      - DEBUG=False
+    volumes:
+      - ./data/uploads:/app/data/uploads
+      - ./data/results:/app/data/results
+    restart: unless-stopped
+    networks:
+      - domain-enrichment-network
+
+networks:
+  domain-enrichment-network:
+    driver: bridge
+
+volumes:
+  data:
