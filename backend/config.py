@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from pathlib import Path
+import os
 
 
 class Settings(BaseSettings):
@@ -18,9 +19,9 @@ class Settings(BaseSettings):
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
 
-    # File storage
-    UPLOAD_DIR: Path = Path("./data/uploads")
-    RESULTS_DIR: Path = Path("./data/results")
+    # File storage - Use environment variables if set (for Vercel)
+    UPLOAD_DIR: Path = Path(os.environ.get('UPLOAD_DIR', './data/uploads'))
+    RESULTS_DIR: Path = Path(os.environ.get('RESULTS_DIR', './data/results'))
     MAX_UPLOAD_SIZE: int = 52428800  # 50MB
 
     # Processing settings
@@ -49,6 +50,9 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Ensure directories exist
-settings.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-settings.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+# Ensure directories exist (only if not on Vercel)
+# Vercel uses /tmp for temporary storage
+import os
+if not os.environ.get('VERCEL'):
+    settings.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    settings.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
